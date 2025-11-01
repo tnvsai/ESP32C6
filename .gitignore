@@ -1,0 +1,20 @@
+# Ignore the ESP-IDF SDK itself
+esp-idf/
+
+# Ignore build artifacts
+build/
+sdkconfig.old
+*.bin
+*.elf
+*.map
+
+# Ignore backup and temp files
+*.log
+*.pyc
+__pycache__/
+.DS_Store
+
+# Ignore VS Code / editor configs
+.vscode/
+.idea/
+
