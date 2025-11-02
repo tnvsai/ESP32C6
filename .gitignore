@@ -14,6 +14,8 @@ sdkconfig.old
 __pycache__/
 .DS_Store
 
+
+esp_rtos_lab/dependencies.lock
 # Ignore VS Code / editor configs
 .vscode/
 .idea/
