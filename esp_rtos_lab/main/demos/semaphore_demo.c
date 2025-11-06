@@ -111,7 +111,7 @@ void demo_main(void)
         xTaskCreate(worker_task, "WorkerTask", 2048, (void *)i, 1, NULL);
     }
 }
-#else
+#elseif(0) //Mutex Semaphore
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/semphr.h"
@@ -161,6 +161,69 @@ void demo_main(void)
 
     xTaskCreate(writer_task, "WriterTask", 2048, NULL, 2, NULL);
     xTaskCreate(reader_task, "ReaderTask", 2048, NULL, 1, NULL);
+}
+#else //Recursive Mutex Semaphore
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/semphr.h"
+#include "esp_log.h"
+
+static const char *TAG = "RECURSIVE_MUTEX";
+SemaphoreHandle_t xRecursiveMutex;
+
+// === Inner Function ===
+void nested_function(void)
+{
+    if (xSemaphoreTakeRecursive(xRecursiveMutex, pdMS_TO_TICKS(1000)) == pdTRUE)
+    {
+        ESP_LOGI(TAG, "Nested function acquired mutex");
+        vTaskDelay(pdMS_TO_TICKS(500)); // simulate work
+        xSemaphoreGiveRecursive(xRecursiveMutex);
+        ESP_LOGI(TAG, "Nested function released mutex");
+    }
+}
+
+// === Outer Function ===
+void main_function(void)
+{
+    if (xSemaphoreTakeRecursive(xRecursiveMutex, pdMS_TO_TICKS(1000)) == pdTRUE)
+    {
+        ESP_LOGI(TAG, "Main function acquired mutex");
+        vTaskDelay(pdMS_TO_TICKS(500));
+
+        // Calls another function that tries to use the same resource
+        nested_function();
+
+        xSemaphoreGiveRecursive(xRecursiveMutex);
+        ESP_LOGI(TAG, "Main function released mutex");
+    }
+}
+
+// === Task ===
+void taskA(void *pvParameters)
+{
+    while (1)
+    {
+        main_function();
+        vTaskDelay(pdMS_TO_TICKS(2000));
+    }
+}
+
+void demo_main(void)
+{
+    ESP_LOGI(TAG, "Starting Recursive Mutex Demo...");
+
+    // Create a recursive mutex
+    xRecursiveMutex = xSemaphoreCreateRecursiveMutex();
+
+    if (xRecursiveMutex == NULL)
+    {
+        ESP_LOGE(TAG, "Failed to create recursive mutex!");
+        return;
+    }
+
+    // Create a single task to demonstrate
+    xTaskCreate(taskA, "TaskA", 4096, NULL, 2, NULL);
 }
 
 #endif 
