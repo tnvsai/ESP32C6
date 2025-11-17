@@ -1,0 +1,13 @@
+# Name,     Type, SubType, Offset,   Size,    Flags
+# -------------------------------------------------------------------
+# Bootloader uses first 64 KB (0x00000 - 0x0FFFF)
+# Partition table starts at 0x10000 (default in menuconfig)
+# First actual partition must start after 0x10000 (e.g. 0x11000)
+# -------------------------------------------------------------------
+
+nvs,        data, nvs,     0x11000,   0x6000,
+phy_init,   data, phy,     0x17000,   0x1000,
+factory,    app,  factory, 0x20000,   2M,
+ota_0,      app,  ota_0,         ,    2M,
+ota_1,      app,  ota_1,          ,   2M,
+storage,    data, spiffs,          ,  1M,
